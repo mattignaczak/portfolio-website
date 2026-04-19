@@ -1,24 +1,14 @@
-# portfolio-website
+# Welcome to your CDK TypeScript project
 
-Full-stack TypeScript portfolio built with AWS CDK — includes the website frontend and API backend.
+This is a blank project for CDK development with TypeScript.
 
-## Development
+The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
-This project uses a [devcontainer](https://containers.dev) for a consistent development environment. Open in VS Code and select **Reopen in Container** when prompted.
+## Useful commands
 
-### Prerequisites
-
-- Docker
-- VS Code with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-- AWS credentials configured at `~/.aws` on your host machine
-
-### What's included
-
-| Tool | Purpose |
-|------|---------|
-| Node 24 + TypeScript | Runtime and language |
-| pnpm | Package manager (via corepack) |
-| AWS CLI | CDK deploys and AWS interaction |
-| LocalStack | Local AWS emulation |
-| Docker-in-Docker | Build and run container images locally |
-| GitHub CLI | PR and release workflow |
+* `npm run build`   compile typescript to js
+* `npm run watch`   watch for changes and compile
+* `npm run test`    perform the jest unit tests
+* `npx cdk deploy`  deploy this stack to your default AWS account/region
+* `npx cdk diff`    compare deployed stack with current state
+* `npx cdk synth`   emits the synthesized CloudFormation template
