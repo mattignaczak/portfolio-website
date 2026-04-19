@@ -1,8 +1,9 @@
 {
-  "name": "cdk-init",
+  "name": "portfolio-website",
   "version": "0.1.0",
+  "packageManager": "pnpm@latest",
   "bin": {
-    "cdk-init": "bin/cdk-init.js"
+    "portfolio-website": "bin/portfolio-website.js"
   },
   "scripts": {
     "build": "tsc",
