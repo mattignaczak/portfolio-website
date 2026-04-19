@@ -4,12 +4,20 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Personal portfolio website. Early-stage — no framework or build tooling has been chosen yet.
+Full-stack TypeScript portfolio website and API built with AWS CDK. Intended to showcase modern AWS and TypeScript patterns for a job search portfolio.
 
 ## Environment
 
-The devcontainer uses `mcr.microsoft.com/devcontainers/typescript-node:0-18`, so TypeScript + Node 18 is the expected stack.
+Development is done inside a devcontainer (Node 24, Debian Trixie). Features included:
+- AWS CLI — for CDK deploys and AWS interaction
+- Docker-in-Docker — for building/running container images locally
+- GitHub CLI
+- LocalStack CLI — for local AWS emulation without incurring costs
+
+`~/.aws` is bind-mounted into the container so local AWS credentials are available automatically.
+
+pnpm is the package manager, enabled via corepack.
 
 ## Commands
 
-Commands will be added here once a framework and build system are in place.
+Commands will be added here once the CDK project is scaffolded.
