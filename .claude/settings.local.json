@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash -n /home/matt/.claude/hooks/obsidian-journal.sh)",
+      "Bash(bash -c 'source /home/matt/.claude/hooks/obsidian-journal.sh 2>/dev/null; :')",
+      "Bash(bash -c ' *)",
+      "WebSearch"
+    ]
+  }
+}
