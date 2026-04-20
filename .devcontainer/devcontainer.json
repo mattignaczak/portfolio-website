@@ -12,7 +12,7 @@
 	"mounts": [
 		"source=${localEnv:HOME}/.aws,target=/home/node/.aws,type=bind,consistency=cached"
 	],
-	"postCreateCommand": "sudo corepack enable",
+	"postCreateCommand": "npm ci",
 	"customizations": {
 		"vscode": {
 			"extensions": [
