@@ -2,5 +2,18 @@
   "name": "portfolio-website",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@latest"
+  "workspaces": [
+    "infra",
+    "src/*"
+  ],
+  "scripts": {
+    "env:push": "dotenv-vault push",
+    "env:pull": "dotenv-vault pull && npm run env:link",
+    "env:open": "dotenv-vault open",
+    "env:link": "for dir in infra src/api src/web; do [ -d \"$dir\" ] && ln -sf \"$(pwd)/.env\" \"$dir/.env\"; done"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "dotenv-vault": "^1.27.0"
+  }
 }

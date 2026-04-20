@@ -8,3 +8,8 @@ node_modules
 # CDK asset staging directory
 .cdk.staging
 cdk.out
+
+# dotenv — commit .env.vault and .env.project, never the rest
+.env*
+!.env.project
+!.env.vault
