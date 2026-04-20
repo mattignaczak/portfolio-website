@@ -14,10 +14,14 @@
     "env:push": "dotenv-vault push",
     "env:pull": "dotenv-vault pull && npm run env:link",
     "env:open": "dotenv-vault open",
-    "env:link": "for dir in infra src/api src/web; do [ -d \"$dir\" ] && ln -sf \"$(pwd)/.env\" \"$dir/.env\"; done"
+    "env:link": "for dir in infra src/api src/web; do [ -d \"$dir\" ] && ln -sf \"$(pwd)/.env\" \"$dir/.env\"; done",
+    "prepare": "husky"
   },
   "dependencies": {
     "dotenv": "^17.4.2",
     "dotenv-vault": "^1.27.0"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
   }
 }
