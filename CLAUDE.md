@@ -4,7 +4,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Full-stack TypeScript portfolio website and API built with AWS CDK. Intended to showcase modern AWS and TypeScript patterns for a job search portfolio.
+A retro Windows desktop experience built on AWS, intended to showcase modern AWS and TypeScript patterns for a job search portfolio. The UI simulates a Windows desktop where each "app" window is backed by real AWS infrastructure:
+
+- **File Explorer** — S3-backed directory listing, each file is a portfolio project
+- **Terminal** — WebSocket API Gateway + Lambda, sandboxed code execution (whitelisted commands only, no outbound network, tight timeout)
+- **Browser window** — renders external content or a project demo
+
+## Architecture
+
+- `src/web` — React SPA (retro Windows desktop UI), hosted on S3 + CloudFront
+- `src/api` — Lambda functions per app window, fronted by API Gateway (REST + WebSocket)
+- `infra` — CDK defining all infrastructure: CloudFront distribution, S3 bucket, API Gateway, Lambdas
 
 ## Structure
 
@@ -34,6 +44,16 @@ npm run env:pull              # pull from vault + symlink to workspaces
 npm run env:push              # push .env to vault
 npm run env:link              # symlink root .env to each workspace
 ```
+
+### Linting and formatting (run from root)
+```bash
+npm run lint                  # ESLint across all workspaces
+npm run lint:fix              # ESLint with --fix
+npm run format:check          # Prettier check across all workspaces
+npm run format                # Prettier write across all workspaces
+```
+
+ESLint config lives in `infra/eslint.config.mjs` (flat config, `recommendedTypeChecked`). Pre-commit hook runs lint-staged on staged `**/*.ts` files via Husky.
 
 ### CDK (run from infra/)
 ```bash
