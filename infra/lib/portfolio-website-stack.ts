@@ -6,6 +6,7 @@ import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
 import path from 'path';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
+import cdkConfig from '../cdk-config';
 
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
@@ -23,7 +24,7 @@ export class PortfolioWebsiteStack extends cdk.Stack {
     const certificate = acm.Certificate.fromCertificateArn(
       this,
       'Certificate',
-      'arn:aws:acm:us-east-1:325056425651:certificate/0d673c7e-22fa-4a9b-9bea-7ebbe327c55d',
+      cdkConfig.website.acmCertArn,
     );
     // TODO: move the domain names and default root to the cdk config.
     const distribution = new cloudfront.Distribution(this, 'Distribution', {

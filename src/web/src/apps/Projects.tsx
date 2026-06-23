@@ -12,12 +12,12 @@ const PROJECTS: Project[] = [
     tech: ['react', 'typescript', 'aws-cdk', 'cloudfront'],
   },
   {
-    name: 'Connected Smoke',
+    name: 'Place Home Solutions',
     description: 'IoT platform for smart home devices. Lambda, DynamoDB, IoT Core, Alexa.',
     tech: ['aws', 'typescript', 'lambda', 'dynamodb'],
   },
   {
-    name: 'eSight Mobile',
+    name: 'eSight Go & 4',
     description: 'Flutter app for smart glasses — Bluetooth, analytics, device diagnostics.',
     tech: ['flutter', 'dart', 'bluetooth'],
   },

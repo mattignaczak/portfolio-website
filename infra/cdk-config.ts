@@ -18,5 +18,8 @@ export default {
   environment: currentEnvironment,
   observability: {},
   api: {},
-  website: {},
+  website: {
+    acmCertArn:
+      'arn:aws:acm:us-east-1:325056425651:certificate/0d673c7e-22fa-4a9b-9bea-7ebbe327c55d',
+  },
 };

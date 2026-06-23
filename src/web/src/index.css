@@ -1,5 +1,7 @@
+@import 'tailwindcss';
+
 :root {
-  --desktop-bg: #008080;
+  --desktop-bg: #000;
   --chrome: #c0c0c0;
   --chrome-shadow: #808080;
   --chrome-light: #ffffff;
