@@ -15,9 +15,9 @@
     "env:pull": "dotenv-vault pull && npm run env:link",
     "env:open": "dotenv-vault open",
     "env:link": "for dir in infra src/api src/web; do [ -d \"$dir\" ] && ln -sf \"$(pwd)/.env\" \"$dir/.env\"; done",
-    "prepare": "husky", 
-    "build:web":"npm run build -w web", 
-    "deploy":"npm run build:web && cd infra && npx cdk deploy"
+    "prepare": "husky",
+    "build:web": "npm run build -w web",
+    "deploy": "npm run build:web && cd infra && npx cdk deploy"
   },
   "devDependencies": {
     "dotenv": "^17.4.2",
@@ -31,5 +31,10 @@
       "eslint --fix",
       "prettier --check"
     ]
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.1",
+    "shadcn": "^4.11.0",
+    "tailwindcss": "^4.3.1"
   }
 }

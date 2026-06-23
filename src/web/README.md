@@ -1,6 +1,6 @@
 # Web
 
-React frontend for the portfolio site. Windows 2000-style UI using [98.css](https://jdan.github.io/98.css/).
+React frontend for the portfolio site.
 
 ## Local development
 
