@@ -11,17 +11,21 @@
     "lint:fix": "npm run lint:fix --workspaces --if-present",
     "format": "npm run format --workspaces --if-present",
     "format:check": "npm run format:check --workspaces --if-present",
-    "env:push": "dotenv-vault push",
-    "env:pull": "dotenv-vault pull && npm run env:link",
-    "env:open": "dotenv-vault open",
-    "env:link": "for dir in infra src/api src/web; do [ -d \"$dir\" ] && ln -sf \"$(pwd)/.env\" \"$dir/.env\"; done",
     "prepare": "husky",
     "build:web": "npm run build -w web",
-    "deploy": "npm run build:web && cd infra && npx cdk deploy"
+    "deploy": "npm run build:web && cd infra && npx cdk deploy",
+    "deploy:dev": "dotenvx run -f .env.dev -- npm run deploy",
+    "deploy:staging": "dotenvx run -f .env.staging -- npm run deploy",
+    "deploy:prod": "dotenvx run -f .env.prod -- npm run deploy",
+    "cdk:synth": "cd infra && npx cdk synth",
+    "cdk:diff": "cd infra && npx cdk diff",
+    "synth": "dotenvx run -f .env.dev -- npm run cdk:synth",
+    "diff:prod": "dotenvx run -f .env.prod -- npm run cdk:diff",
+    "env:encrypt": "dotenvx encrypt -f .env.dev -f .env.staging -f .env.prod -f .env.test",
+    "env:decrypt": "dotenvx decrypt -f .env.dev -f .env.staging -f .env.prod -f .env.test"
   },
   "devDependencies": {
-    "dotenv": "^17.4.2",
-    "dotenv-vault": "^1.27.0",
+    "@dotenvx/dotenvx": "^1.75.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "tsconfig-paths": "^4.2.0"
@@ -34,6 +38,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.1",
+    "headroom-ai": "^0.22.4",
     "shadcn": "^4.11.0",
     "tailwindcss": "^4.3.1"
   }

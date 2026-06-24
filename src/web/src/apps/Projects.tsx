@@ -1,3 +1,5 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+
 interface Project {
   name: string;
   description: string;
@@ -8,7 +10,7 @@ interface Project {
 const PROJECTS: Project[] = [
   {
     name: 'Portfolio Website',
-    description: 'This site. React 19, 98.css, TypeScript. Deployed to S3 + CloudFront via CDK.',
+    description: 'This site. React 19, shadcn/ui, TypeScript. Deployed to S3 + CloudFront via CDK.',
     tech: ['react', 'typescript', 'aws-cdk', 'cloudfront'],
   },
   {
@@ -25,26 +27,44 @@ const PROJECTS: Project[] = [
 
 export function Projects() {
   return (
-    <div className="projects">
-      <ul className="tree-view" role="list">
+    <div className="space-y-6">
+      <h1 className="text-2xl font-semibold">Projects</h1>
+
+      <div className="grid gap-4">
         {PROJECTS.map((project) => (
-          <li key={project.name}>
-            <details open>
-              <summary>
-                <strong>{project.name}</strong>
-              </summary>
-              <p>{project.description}</p>
-              <p className="tech-tags">
+          <Card key={project.name}>
+            <CardHeader>
+              <CardTitle>
+                {project.url ? (
+                  <a
+                    href={project.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline-offset-4 hover:underline"
+                  >
+                    {project.name}
+                  </a>
+                ) : (
+                  project.name
+                )}
+              </CardTitle>
+              <CardDescription>{project.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="flex flex-wrap gap-1.5">
                 {project.tech.map((t) => (
-                  <span key={t} className="tech-tag">
+                  <li
+                    key={t}
+                    className="rounded-md border bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+                  >
                     {t}
-                  </span>
+                  </li>
                 ))}
-              </p>
-            </details>
-          </li>
+              </ul>
+            </CardContent>
+          </Card>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
