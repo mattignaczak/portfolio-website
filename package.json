@@ -14,18 +14,15 @@
     "prepare": "husky",
     "build:web": "npm run build -w web",
     "deploy": "npm run build:web && cd infra && npx cdk deploy",
-    "deploy:dev": "dotenvx run -f .env.dev -- npm run deploy",
-    "deploy:staging": "dotenvx run -f .env.staging -- npm run deploy",
-    "deploy:prod": "dotenvx run -f .env.prod -- npm run deploy",
+    "deploy:dev": "set -a; . ./.env.dev; set +a; npm run deploy",
+    "deploy:staging": "set -a; . ./.env.staging; set +a; npm run deploy",
+    "deploy:prod": "set -a; . ./.env.prod; set +a; npm run deploy",
     "cdk:synth": "cd infra && npx cdk synth",
     "cdk:diff": "cd infra && npx cdk diff",
-    "synth": "dotenvx run -f .env.dev -- npm run cdk:synth",
-    "diff:prod": "dotenvx run -f .env.prod -- npm run cdk:diff",
-    "env:encrypt": "dotenvx encrypt -f .env.dev -f .env.staging -f .env.prod -f .env.test",
-    "env:decrypt": "dotenvx decrypt -f .env.dev -f .env.staging -f .env.prod -f .env.test"
+    "synth": "set -a; . ./.env.dev; set +a; npm run cdk:synth",
+    "diff:prod": "set -a; . ./.env.prod; set +a; npm run cdk:diff"
   },
   "devDependencies": {
-    "@dotenvx/dotenvx": "^1.75.1",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "tsconfig-paths": "^4.2.0"

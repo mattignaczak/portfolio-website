@@ -1,3 +1,1 @@
 npx lint-staged
-# Block committing any unencrypted .env secrets (encrypted .env.<env> files pass).
-npx dotenvx ext precommit

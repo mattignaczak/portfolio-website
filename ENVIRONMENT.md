@@ -1,33 +1,38 @@
-# Environment & Secrets (dotenvx)
+# Environment & Secrets
 
-This project manages environment variables with [dotenvx](https://dotenvx.com).
-Each environment has its own **encrypted** file that is committed to git; the
-private keys that decrypt them are **never** committed.
+Environment variables live in per-environment files that are **local only and
+gitignored**. The repo commits only `.env.example` as documentation. No env-management
+dependency is used — the npm scripts source the right file before running CDK, and
+Node 22 / GitHub Actions handle the rest.
 
 ```
-.env.dev        # committed — values are ciphertext (DEPLOY_ENV=dev, …)
-.env.staging    # committed — ciphertext
-.env.prod       # committed — ciphertext
-.env.test       # committed — ciphertext
-.env.example    # committed — plaintext template, no real values
-.env.keys       # GITIGNORED — the private keys (DOTENV_PRIVATE_KEY_*)
+.env.dev        # gitignored, local only
+.env.staging    # gitignored, local only
+.env.prod       # gitignored, local only
+.env.test       # gitignored, local only
+.env.example    # COMMITTED — template, no real values
 ```
 
 Valid environments are defined in `infra/cdk-config.ts`: `prod | staging | dev | test`.
 Each `.env.<environment>` sets `DEPLOY_ENV` to its own name, which `cdk-config.ts`
 reads to select the deployment target.
 
-## How it works
+## How env vars reach CDK
 
-- `dotenvx encrypt` encrypts each value with a per-file public key (stored at the
-  top of the file) and writes the matching private key to `.env.keys`.
-- A committed `.env.prod` therefore only ever contains `encrypted:…` values — safe
-  to push, even to a public repo.
-- To **read** the values, dotenvx needs the private key, which it finds either in
-  `.env.keys` (local) or in a `DOTENV_PRIVATE_KEY_<ENV>` environment variable (CI).
-- Nothing imports dotenv in code anymore. Env vars are injected at the CLI layer by
-  the `dotenvx run -f …` wrappers in `package.json`, so they propagate to the CDK
-  child process automatically.
+`cdk` spawns its own Node process, so `node --env-file` on the parent wouldn't
+propagate. Instead the npm scripts **export** the file into the shell environment,
+which child processes (cdk → ts-node → `cdk-config.ts`) inherit:
+
+```json
+"deploy:prod": "set -a; . ./.env.prod; set +a; npm run deploy"
+```
+
+`set -a` marks every variable defined next for export; `. ./.env.prod` sources the
+file; `set +a` turns that off again. No code imports anything — `cdk-config.ts` just
+reads `process.env.DEPLOY_ENV`.
+
+> Note: this uses POSIX shell (`.`/`set -a`), so it runs on macOS/Linux. On Windows
+> use WSL or Git Bash.
 
 ## Daily commands
 
@@ -39,45 +44,44 @@ npm run deploy:staging
 npm run deploy:prod
 ```
 
-Each wrapper is `dotenvx run -f .env.<env> -- npm run <cdk command>`.
+## Adding a variable
 
-## Editing values / adding a secret
+1. Add it to `.env.example` (with an empty/example value) so it's documented.
+2. Add the real value to each `.env.<environment>` that needs it.
+3. Use it in code via `process.env.MY_VAR`.
 
-1. Decrypt the file you want to edit (needs `.env.keys`):
-   ```bash
-   npm run env:decrypt           # decrypts all .env.<env> files in place
-   ```
-2. Edit the plaintext value(s) in e.g. `.env.prod`.
-3. Re-encrypt before committing:
-   ```bash
-   npm run env:encrypt
-   ```
+**Secrets do not belong in these files for anything you'd deploy from CI.** They're
+fine locally, but the moment a secret needs to exist in CI or production, use one of:
 
-You can also append a new key while encrypted — dotenvx will encrypt just that key
-on the next `npm run env:encrypt`. The husky pre-commit hook runs
-`dotenvx ext precommit`, which **blocks the commit** if any `.env` value would land
-in git as plaintext.
+- **GitHub Actions secrets** — for values CI needs at deploy time (see below).
+- **AWS SSM Parameter Store / Secrets Manager** — for values the running app needs.
+  Reference them in the CDK stack so they never touch git or `.env`:
+  ```ts
+  ssm.StringParameter.valueForStringParameter(this, '/portfolio/prod/some-key');
+  ```
 
-> Never feed a decrypted secret into a CDK construct prop as a literal — it would be
-> baked into the CloudFormation template. For runtime secrets use AWS Secrets Manager
-> / SSM SecureString and reference them in the stack instead.
+Also remember: anything read via `process.env` in `cdk-config.ts` is baked into the
+synthesized CloudFormation template. Keep that to non-secret config only.
 
 ## Setting up on another laptop
 
-1. Clone the repo and `npm install`.
-2. Get the private keys. Either:
-   - copy `.env.keys` from your password manager into the repo root, **or**
-   - export the keys as shell env vars (`DOTENV_PRIVATE_KEY_PROD=…`, etc.).
-3. That's it — `npm run deploy:prod` (or any wrapper) will decrypt and run.
+Because the real `.env.*` files are gitignored, a fresh clone has only `.env.example`.
+Recreate the env files:
 
-`.env.keys` is the only thing you must transfer out-of-band. Store it in your
-password manager (1Password, etc.), not in git, not in chat, not in email.
+```bash
+git clone <repo> && cd portfolio-website && npm install
+cp .env.example .env.dev    # then set DEPLOY_ENV=dev (+ any other values)
+# repeat for .env.staging / .env.prod / .env.test as needed
+```
+
+If/when these files hold real values you want to carry between machines, store them
+in your password manager (1Password secure note, etc.) and paste them in — never
+commit them, never send them over chat/email.
 
 ## GitHub Actions / CI
 
-Store each environment's private key as a GitHub Actions **secret**
-(`DOTENV_PRIVATE_KEY_PROD`, `DOTENV_PRIVATE_KEY_STAGING`, …). dotenvx picks it up
-from the environment automatically — no `.env.keys` file needed in CI.
+CI does not use the `.env.*` files at all. Set values directly in the workflow:
+non-secret config via repository **variables**, secrets via repository **secrets**.
 
 ```yaml
 # .github/workflows/deploy.yml (sketch)
@@ -85,7 +89,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write      # for AWS OIDC (no long-lived keys)
+      id-token: write      # AWS OIDC — no long-lived AWS keys
       contents: read
     steps:
       - uses: actions/checkout@v4
@@ -96,10 +100,11 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::<acct>:role/<deploy-role>
           aws-region: us-east-1
-      - run: npm run deploy:prod
+      - run: npm run deploy        # not deploy:prod — env comes from CI, not a file
         env:
-          DOTENV_PRIVATE_KEY_PROD: ${{ secrets.DOTENV_PRIVATE_KEY_PROD }}
+          DEPLOY_ENV: prod
+          # SOME_SECRET: ${{ secrets.SOME_SECRET }}
 ```
 
-Pair this with an IAM role that trusts GitHub's OIDC provider so CI never holds
+Pair this with an IAM role that trusts GitHub's OIDC provider so CI holds no
 long-lived AWS credentials.

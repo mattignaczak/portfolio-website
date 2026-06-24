@@ -9,10 +9,9 @@ node_modules
 .cdk.staging
 cdk.out
 
-# --- env (dotenvx) ---
-# Encrypted .env.<environment> files ARE committed (values are ciphertext).
-# NEVER commit the private keys or local-only overrides:
-.env.keys
+# --- env ---
+# Real env files are LOCAL ONLY and must never be committed.
+# Only .env.example (the committed template) is allowed through.
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
