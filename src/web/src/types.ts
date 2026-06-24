@@ -1,19 +1,10 @@
-import type { ReactNode } from 'react';
+import type { ComponentType } from 'react';
 
-export type AppId = 'about' | 'projects' | 'contact' | 'resume';
+export type PageId = 'about' | 'projects' | 'resume' | 'contact';
 
-export interface AppDefinition {
-  id: AppId;
+export interface PageDefinition {
+  id: PageId;
   title: string;
-  icon: string;
-  defaultSize: { width: number; height: number };
-  defaultPosition: { x: number; y: number };
-  render: () => ReactNode;
-}
-
-export interface WindowInstance {
-  id: AppId;
-  minimized: boolean;
-  position: { x: number; y: number };
-  size: { width: number; height: number };
+  path: string;
+  component: ComponentType;
 }

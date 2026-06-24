@@ -1,15 +1,16 @@
-import 'dotenv/config';
+// Env vars are injected by dotenvx at the CLI layer (see the deploy:* / synth
+// scripts in the root package.json), so there is no dotenv import here.
 import { version } from './package.json';
 // import { Duration } from "aws-cdk-lib";
 // import {generateName, getEnvVarAsBool, getEnvVarAsNumber } from "@infra";
 
-const currentEnvironment: string = process.env.DEPLOY_ENV
-  ? process.env.DEPLOY_ENV.toLowerCase()
-  : 'default';
 const availableEnvironments = ['prod', 'staging', 'dev', 'test'];
+const currentEnvironment: string = (process.env.DEPLOY_ENV ?? '').toLowerCase();
 if (!availableEnvironments.includes(currentEnvironment)) {
   throw new Error(
-    `You must specify the environment variable DEPLOY_ENV. possible values ${availableEnvironments.toString()}`,
+    `DEPLOY_ENV must be one of [${availableEnvironments.join(', ')}] (got "${process.env.DEPLOY_ENV ?? ''}"). ` +
+      `Run through an env-aware script, e.g. \`npm run deploy:dev\` / \`npm run synth\`, ` +
+      `which load the encrypted .env.<environment> file via dotenvx.`,
   );
 }
 

@@ -9,6 +9,10 @@ node_modules
 .cdk.staging
 cdk.out
 
-.env*
-!.env.project
-!.env.vault
+# --- env (dotenvx) ---
+# Encrypted .env.<environment> files ARE committed (values are ciphertext).
+# NEVER commit the private keys or local-only overrides:
+.env.keys
+.env
+.env.local
+.env.*.local
