@@ -8,6 +8,8 @@
       "dom"
     ],
     "declaration": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -23,9 +25,10 @@
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
     "typeRoots": [
-      "./node_modules/@types"
+      "./node_modules/@types",
+      "../node_modules/@types"
     ],
-    "types": ["node"],
+    "types": ["node", "jest"],
     "paths": {
       "@utils":[
         "./src/utils/*"
