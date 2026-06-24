@@ -20,20 +20,18 @@ export class PortfolioWebsiteStack extends cdk.Stack {
       autoDeleteObjects: true,
     });
 
-    // TODO: add arn to the cdk config
     const certificate = acm.Certificate.fromCertificateArn(
       this,
       'Certificate',
       cdkConfig.website.acmCertArn,
     );
-    // TODO: move the domain names and default root to the cdk config.
     const distribution = new cloudfront.Distribution(this, 'Distribution', {
       defaultBehavior: {
         origin: origins.S3BucketOrigin.withOriginAccessControl(siteBucket),
         viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
       },
       defaultRootObject: 'index.html',
-      domainNames: ['www.sandbox.mattignaczak.xyz', 'sandbox.mattignaczak.xyz'],
+      domainNames: cdkConfig.website.domainNames,
       certificate,
     });
 

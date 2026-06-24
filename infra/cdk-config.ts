@@ -2,8 +2,6 @@
 // the root package.json (set -a; . ./.env.<env>) and inherited by this process,
 // so there is no dotenv dependency or import here.
 import { version } from './package.json';
-// import { Duration } from "aws-cdk-lib";
-// import {generateName, getEnvVarAsBool, getEnvVarAsNumber } from "@infra";
 
 const availableEnvironments = ['prod', 'staging', 'dev', 'test'];
 const currentEnvironment: string = (process.env.DEPLOY_ENV ?? '').toLowerCase();
@@ -15,13 +13,32 @@ if (!availableEnvironments.includes(currentEnvironment)) {
   );
 }
 
+/**
+ * Read a required, stage-specific env var. Returns the trimmed value, or fails
+ * fast (before any CloudFormation is synthesized) when it is missing/blank.
+ */
+function requireEnv(name: string): string {
+  const value = process.env[name]?.trim();
+  if (!value) {
+    throw new Error(
+      `Missing required env var "${name}" for the "${currentEnvironment}" environment. ` +
+        `Set it in .env.${currentEnvironment} (see .env.example)`,
+    );
+  }
+  return value;
+}
+
+const domainName = requireEnv('SITE_DOMAIN_NAME');
+
 export default {
   version,
   environment: currentEnvironment,
   observability: {},
   api: {},
   website: {
-    acmCertArn:
-      'arn:aws:acm:us-east-1:325056425651:certificate/0d673c7e-22fa-4a9b-9bea-7ebbe327c55d',
+    domainName,
+    // Both the apex and its www. subdomain are served by one distribution.
+    domainNames: [`www.${domainName}`, domainName],
+    acmCertArn: requireEnv('ACM_CERT_ARN'),
   },
 };

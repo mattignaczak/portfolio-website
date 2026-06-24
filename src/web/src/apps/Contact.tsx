@@ -25,9 +25,15 @@ function readFields(formData: FormData): ContactFields {
 }
 
 function validate(fields: ContactFields): string | null {
-  // TODO(human): decide the validation rules for the contact form.
-  // Return an error message (string) if the input is invalid, or null if it's OK.
-  // `fields` has trimmed { name, email, message }.
+  if (!fields.name || !fields.email || !fields.message) {
+    return 'All fields are required.';
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) {
+    return 'Please enter a valid email address.';
+  }
+  if (fields.message.length < 10) {
+    return 'Your message is a little short — tell me a bit more.';
+  }
   return null;
 }
 
