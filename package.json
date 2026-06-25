@@ -14,12 +14,12 @@
     "prepare": "husky",
     "build:web": "npm run build -w web",
     "deploy": "npm run build:web && cd infra && npx cdk deploy",
-    "deploy:dev": "set -a; . ./.env.dev; set +a; npm run deploy",
+    "deploy:sandbox": "set -a; . ./.env.sandbox; set +a; npm run deploy",
     "deploy:staging": "set -a; . ./.env.staging; set +a; npm run deploy",
     "deploy:prod": "set -a; . ./.env.prod; set +a; npm run deploy",
     "cdk:synth": "cd infra && npx cdk synth",
     "cdk:diff": "cd infra && npx cdk diff",
-    "synth": "set -a; . ./.env.dev; set +a; npm run cdk:synth",
+    "synth": "set -a; . ./.env.sandbox; set +a; npm run cdk:synth",
     "diff:prod": "set -a; . ./.env.prod; set +a; npm run cdk:diff"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 
-export type PageId = 'about' | 'projects' | 'resume' | 'contact';
+export type PageId = 'about' | 'projects' | 'blog' | 'resume' | 'contact';
 
 export interface PageDefinition {
   id: PageId;

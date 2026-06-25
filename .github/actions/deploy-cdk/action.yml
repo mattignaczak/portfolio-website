@@ -1,0 +1,82 @@
+name: Deploy CDK stack
+description: >-
+  Build the web bundle and deploy the PortfolioWebsiteStack to AWS, assuming an
+  IAM role via GitHub OIDC (no long-lived access keys). Stage-specific config
+  (DEPLOY_ENV / SITE_DOMAIN_NAME / ACM_CERT_ARN) is read from the calling job's
+  env, so this action stays identical across sandbox / staging / prod.
+
+inputs:
+  aws-role-arn:
+    description: IAM role ARN to assume via GitHub OIDC.
+    required: true
+  aws-region:
+    description: Region to deploy into. Must be us-east-1 for the ACM cert.
+    required: false
+    default: us-east-1
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        cache: npm
+
+    - name: Install dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Configure AWS credentials (OIDC)
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.aws-role-arn }}
+        aws-region: ${{ inputs.aws-region }}
+
+    # Stages src/web/dist, which the BucketDeployment construct uploads as an asset.
+    - name: Build web bundle
+      shell: bash
+      run: npm run build:web
+
+    # Surface what will change before applying. Written to the job summary so a
+    # reviewer (esp. on the gated prod job) can see the planned delta. Informational
+    # only — no --fail, so an empty or non-empty diff never blocks the deploy.
+    - name: Diff against deployed stack
+      shell: bash
+      working-directory: infra
+      run: |
+        {
+          echo '### `cdk diff`'
+          echo '```'
+          npx cdk diff --no-color 2>&1 || true
+          echo '```'
+        } >> "$GITHUB_STEP_SUMMARY"
+
+    # --require-approval never: the stack creates IAM (auto-delete Lambda, bucket
+    # policy); without this, cdk would block on an interactive prompt in CI.
+    # --outputs-file: capture DistributionUrl for the smoke test.
+    - name: Deploy stack
+      shell: bash
+      working-directory: infra
+      run: npx cdk deploy --require-approval never --outputs-file cdk-outputs.json
+
+    # A green deploy that serves a blank page is still a failed deploy. Hit the
+    # CloudFront URL (no DNS dependency) and assert it returns 200 and the app
+    # shell. Retries cover the brief window after the distribution settles.
+    - name: Smoke test
+      shell: bash
+      working-directory: infra
+      run: |
+        url=$(node -e "const o=require('./cdk-outputs.json'); console.log(Object.values(o)[0].DistributionUrl)")
+        echo "Smoke testing $url"
+        for attempt in $(seq 1 5); do
+          code=$(curl -fsS -o body.html -w '%{http_code}' "$url" || echo 000)
+          if [ "$code" = "200" ] && grep -q 'id="root"' body.html; then
+            echo "✓ $url returned 200 and served the app shell"
+            exit 0
+          fi
+          echo "attempt $attempt: status=$code — retrying in 10s"
+          sleep 10
+        done
+        echo "✗ smoke test failed for $url"
+        head -c 2000 body.html || true
+        exit 1

@@ -1,0 +1,104 @@
+name: CI/CD
+
+# Tests run on every push and PR. Deploys are stage-gated:
+#   push            -> sandbox  (DEPLOY_ENV=sandbox)
+#   pull_request    -> staging  (DEPLOY_ENV=staging)
+#   push to main    -> prod, behind a manual approval gate (DEPLOY_ENV=prod)
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+# Serialize runs per ref, and never auto-cancel: cancelling a run mid-deploy can
+# leave CloudFormation in UPDATE_IN_PROGRESS. Same-environment deploys across
+# different refs are additionally serialized by per-job concurrency below.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write # required by the OIDC role assumption in deploy jobs
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Required before the infra tests: the BucketDeployment asset reads src/web/dist.
+      # build:web also runs `tsc --noEmit`, so it type-checks the frontend.
+      - run: npm run build:web
+      - run: npm run format:check
+      - run: npm run lint
+      # Type-check the infra workspace incl. files no test imports (e.g. the OIDC
+      # stack/app), which ts-jest alone wouldn't reach.
+      - run: npx tsc --noEmit
+        working-directory: infra
+      # Synth-only assertions + cdk-nag gate — no AWS calls. test/setup.ts injects
+      # DEPLOY_ENV=test and test-only domain/cert values, so no secrets are needed.
+      - run: npm test -w infra
+
+  deploy-sandbox:
+    needs: test
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: sandbox
+    # Serialize all sandbox deploys (across branches) onto one CloudFormation op.
+    concurrency:
+      group: deploy-sandbox
+      cancel-in-progress: false
+    env:
+      DEPLOY_ENV: sandbox
+      SITE_DOMAIN_NAME: ${{ vars.SITE_DOMAIN_NAME }}
+      ACM_CERT_ARN: ${{ vars.ACM_CERT_ARN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy-cdk
+        with:
+          aws-role-arn: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+
+  deploy-staging:
+    needs: test
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    environment: staging
+    # Shared staging stack: serialize concurrent PR deploys so they don't collide.
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    env:
+      DEPLOY_ENV: staging
+      SITE_DOMAIN_NAME: ${{ vars.SITE_DOMAIN_NAME }}
+      ACM_CERT_ARN: ${{ vars.ACM_CERT_ARN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy-cdk
+        with:
+          aws-role-arn: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+
+  # Runs only after sandbox succeeds on main. The `production` environment's
+  # required-reviewer rule (configured in repo Settings) makes this job pause
+  # as "Waiting" until you approve it — that's the manual promotion gate.
+  deploy-prod:
+    needs: deploy-sandbox
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    # Never run two production deploys at once.
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      DEPLOY_ENV: prod
+      SITE_DOMAIN_NAME: ${{ vars.SITE_DOMAIN_NAME }}
+      ACM_CERT_ARN: ${{ vars.ACM_CERT_ARN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy-cdk
+        with:
+          aws-role-arn: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
