@@ -14,12 +14,27 @@ export class PortfolioWebsiteStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // Stack-level tags cascade to every taggable resource (bucket, distribution,
+    // deployment). Stage comes from cdk-config so each environment is labelled
+    // correctly for cost allocation and resource filtering in the console.
+    const tags = cdk.Tags.of(this);
+    tags.add('Project', 'portfolio-website');
+    tags.add('Environment', cdkConfig.environment);
+    tags.add('ManagedBy', 'cdk');
+    // TODO(human): add any further org-convention tags (e.g. Owner, CostCenter)
+
     const siteBucket = new s3.Bucket(this, 'mattignaczakXyzSiteBucket', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      // Deny any non-TLS request via an aws:SecureTransport bucket policy
+      // (satisfies cdk-nag AwsSolutions-S10). CloudFront already talks to the
+      // origin over HTTPS; this closes off plaintext access to the bucket itself.
+      enforceSSL: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
     });
 
+    // The cert and its Route 53 hosted zone are provisioned manually, outside
+    // this stack — see "DNS & TLS" in ENVIRONMENT.md. We only reference by ARN.
     const certificate = acm.Certificate.fromCertificateArn(
       this,
       'Certificate',

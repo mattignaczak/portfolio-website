@@ -28,12 +28,12 @@ export class ErrorBoundary extends Component<Props, State> {
           role="alert"
           className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground"
         >
-          <div className="w-full max-w-md space-y-4 rounded-lg border bg-card p-6 shadow-sm">
-            <h1 className="text-lg font-semibold">Something went wrong</h1>
-            <pre className="overflow-auto rounded-md bg-muted p-3 text-xs text-muted-foreground">
+          <div className="w-full max-w-md space-y-4 rounded-base border-2 border-border bg-secondary-background p-6 shadow-shadow">
+            <h1 className="font-heading text-lg">Something went wrong</h1>
+            <pre className="overflow-auto rounded-base border-2 border-border bg-background p-3 text-xs">
               {this.state.error.message}
             </pre>
-            <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
+            <Button variant="neutral" size="sm" onClick={() => window.location.reload()}>
               Reload
             </Button>
           </div>

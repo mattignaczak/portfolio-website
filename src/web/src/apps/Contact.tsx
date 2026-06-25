@@ -1,9 +1,14 @@
 import { useActionState } from 'react';
+import { PaperPlaneRight } from '@phosphor-icons/react';
+import { content, format } from '../content';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
+
+const { contact } = content;
 
 interface ContactState {
   status: 'idle' | 'success' | 'error';
@@ -26,13 +31,13 @@ function readFields(formData: FormData): ContactFields {
 
 function validate(fields: ContactFields): string | null {
   if (!fields.name || !fields.email || !fields.message) {
-    return 'All fields are required.';
+    return contact.status.allRequired;
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email)) {
-    return 'Please enter a valid email address.';
+    return contact.status.invalidEmail;
   }
   if (fields.message.length < 10) {
-    return 'Your message is a little short — tell me a bit more.';
+    return contact.status.shortMessage;
   }
   return null;
 }
@@ -45,7 +50,7 @@ async function submitContact(_prev: ContactState, formData: FormData): Promise<C
   }
 
   await new Promise((r) => setTimeout(r, 600));
-  return { status: 'success', message: `Thanks ${fields.name} — message received.` };
+  return { status: 'success', message: format(contact.status.success, { name: fields.name }) };
 }
 
 export function Contact() {
@@ -55,40 +60,49 @@ export function Contact() {
   });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Contact</h1>
-      <p className="text-sm text-muted-foreground">Drop me a line — I&apos;ll get back to you.</p>
+    <div className="space-y-8">
+      <div className="space-y-2">
+        <h1 className="font-heading text-3xl">{contact.heading}</h1>
+        <p className="text-sm">{contact.intro}</p>
+      </div>
 
-      <form action={action} className="max-w-md space-y-4">
-        <div className="space-y-1.5">
-          <Label htmlFor="contact-name">Name</Label>
-          <Input id="contact-name" name="name" type="text" required />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="contact-email">Email</Label>
-          <Input id="contact-email" name="email" type="email" required />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="contact-message">Message</Label>
-          <Textarea id="contact-message" name="message" rows={5} required />
-        </div>
-        <div className="flex items-center gap-3">
-          <Button type="submit" disabled={isPending}>
-            {isPending ? 'Sending…' : 'Send'}
-          </Button>
-          {state.status !== 'idle' && (
-            <p
-              role="status"
-              className={cn(
-                'text-sm',
-                state.status === 'success' ? 'text-foreground' : 'text-destructive',
+      <Card className="bg-secondary-background">
+        <CardContent>
+          <form action={action} className="space-y-5">
+            <div className="space-y-2">
+              <Label htmlFor="contact-name">{contact.fields.name}</Label>
+              <Input id="contact-name" name="name" type="text" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contact-email">{contact.fields.email}</Label>
+              <Input id="contact-email" name="email" type="email" required />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contact-message">{contact.fields.message}</Label>
+              <Textarea id="contact-message" name="message" rows={5} required />
+            </div>
+            <div className="flex flex-wrap items-center gap-4">
+              <Button type="submit" disabled={isPending}>
+                <PaperPlaneRight weight="bold" />
+                {isPending ? contact.sending : contact.submit}
+              </Button>
+              {state.status !== 'idle' && (
+                <p
+                  role="status"
+                  className={cn(
+                    'rounded-base border-2 border-border px-3 py-1 text-sm font-base shadow-shadow',
+                    state.status === 'success'
+                      ? 'bg-main text-main-foreground'
+                      : 'bg-chart-2 text-main-foreground',
+                  )}
+                >
+                  {state.message}
+                </p>
               )}
-            >
-              {state.message}
-            </p>
-          )}
-        </div>
-      </form>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

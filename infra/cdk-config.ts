@@ -1,15 +1,26 @@
-// Env vars are sourced from .env.<environment> by the deploy:* / synth scripts in
-// the root package.json (set -a; . ./.env.<env>) and inherited by this process,
-// so there is no dotenv dependency or import here.
+// Stage config lives in the repo-root .env.<DEPLOY_ENV> file — a single source of
+// truth, no duplicate copy inside infra/. Two ways it reaches this process:
+//   1. The root `deploy:* / synth` scripts export it (set -a; . ./.env.<env>) before
+//      invoking cdk, so it's already in process.env.
+//   2. Running cdk directly from infra/ (e.g. `DEPLOY_ENV=sandbox npx cdk deploy`):
+//      the dotenv load below reads ../.env.<DEPLOY_ENV> to fill in the rest.
+// DEPLOY_ENV is the one variable you must set to pick the file. dotenv never
+// overrides an already-set var, so path #1's exported values always win.
+import path from 'path';
+import dotenv from 'dotenv';
 import { version } from './package.json';
 
-const availableEnvironments = ['prod', 'staging', 'dev', 'test'];
+if (process.env.DEPLOY_ENV) {
+  dotenv.config({ path: path.resolve(__dirname, `../.env.${process.env.DEPLOY_ENV}`) });
+}
+
+const availableEnvironments = ['prod', 'staging', 'sandbox', 'test'];
 const currentEnvironment: string = (process.env.DEPLOY_ENV ?? '').toLowerCase();
 if (!availableEnvironments.includes(currentEnvironment)) {
   throw new Error(
     `DEPLOY_ENV must be one of [${availableEnvironments.join(', ')}] (got "${process.env.DEPLOY_ENV ?? ''}"). ` +
-      `Run through an env-aware script, e.g. \`npm run deploy:dev\` / \`npm run synth\`, ` +
-      `which source the matching .env.<environment> file.`,
+      `Set it on the command line (e.g. \`DEPLOY_ENV=sandbox npx cdk deploy\`) or run a ` +
+      `root script (\`npm run deploy:sandbox\`) that sources the matching .env.<environment> file.`,
   );
 }
 
