@@ -1,6 +1,7 @@
 *.js
 !jest.config.js
 *.d.ts
+!src/web/src/vite-env.d.ts
 node_modules
 .pnpm-store
 .claude

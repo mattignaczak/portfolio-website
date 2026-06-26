@@ -54,19 +54,31 @@ function StoreLinks({ links }: { links: Project['links'] }) {
 }
 
 // App icons are square; device renders are wide. Tile the icon like an app, contain the rest.
-function ProjectImage({ project, panel, large }: { project: Project; panel: string; large?: boolean }) {
+function ProjectImage({
+  project,
+  panel,
+  large,
+}: {
+  project: Project;
+  panel: string;
+  large?: boolean;
+}) {
   const isIcon = project.image.includes('companion');
   return (
-    <div className={cn('flex items-center justify-center border-b-2 border-border', panel, large ? 'h-56 p-8' : 'h-52 p-6')}>
+    <div
+      className={cn(
+        'flex items-center justify-center border-b-2 border-border',
+        panel,
+        large ? 'h-56 p-8' : 'h-52 p-6',
+      )}
+    >
       <img
         src={project.image}
         alt={project.imageAlt}
         loading="lazy"
         className={cn(
           'object-contain [filter:drop-shadow(4px_4px_0_rgba(0,0,0,0.3))]',
-          isIcon
-            ? 'aspect-square h-full rounded-2xl border-2 border-border'
-            : 'max-h-full w-auto',
+          isIcon ? 'aspect-square h-full rounded-2xl border-2 border-border' : 'max-h-full w-auto',
         )}
       />
     </div>
