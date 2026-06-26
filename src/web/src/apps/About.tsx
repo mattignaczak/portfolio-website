@@ -52,7 +52,10 @@ export function About() {
           <CardContent>
             {latestPost ? (
               <div className="space-y-3">
-                <Button asChild className="h-auto w-full justify-between whitespace-normal py-3 text-left">
+                <Button
+                  asChild
+                  className="h-auto w-full justify-between whitespace-normal py-3 text-left"
+                >
                   <Link to={`/blog/${latestPost.slug}`}>
                     {latestPost.title}
                     <ArrowRight weight="bold" />
