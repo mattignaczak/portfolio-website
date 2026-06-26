@@ -4,6 +4,7 @@ import { content } from '../content';
 import { formatPostDate, getAllPosts } from '@/lib/posts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AsciiName } from '@/components/AsciiName';
 
 const { about } = content;
 
@@ -16,7 +17,8 @@ export function About() {
         <span className="inline-block rounded-base border-2 border-border bg-main px-3 py-1 font-heading text-sm text-main-foreground shadow-shadow">
           {about.eyebrow}
         </span>
-        <h1 className="font-heading text-4xl sm:text-5xl">{about.heading}</h1>
+        <h1 className="sr-only">{about.heading}</h1>
+        <AsciiName label={about.heading} />
         <p className="max-w-xl text-lg">{about.intro}</p>
         <div className="flex flex-wrap gap-3">
           <Button asChild>

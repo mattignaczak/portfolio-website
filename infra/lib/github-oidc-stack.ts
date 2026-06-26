@@ -7,7 +7,7 @@ export interface GithubOidcStackProps extends cdk.StackProps {
   /** "owner/repo", e.g. mattignaczak/portfolio-website. */
   readonly repo: string;
   /** GitHub Environment name this role is allowed to deploy from. */
-  readonly githubEnvironment: 'sandbox' | 'staging' | 'production';
+  readonly githubEnvironment: 'sandbox' | 'staging' | 'prod';
   /** CDK bootstrap qualifier; override only if you bootstrapped with a custom one. */
   readonly cdkQualifier?: string;
 }

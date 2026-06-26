@@ -42,28 +42,31 @@ export function BlogPost() {
         {blog.backToList}
       </Link>
 
-      <header className="space-y-3 border-b-2 border-border pb-6">
-        <h1 className="font-heading text-3xl leading-tight">{post.title}</h1>
-        <div className="flex flex-wrap items-center gap-3 font-mono text-sm text-foreground/60">
-          <time dateTime={post.date}>{formatPostDate(post.date)}</time>
-          <span aria-hidden>·</span>
-          <span>{format(blog.readingTime, { minutes: post.readingMinutes })}</span>
-        </div>
-        {post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 pt-1">
-            {post.tags.map((tag) => (
-              <Badge key={tag} variant="neutral">
-                {tag}
-              </Badge>
-            ))}
+      {/* Solid "paper" sheet so reading text never sits on the gridded desk. */}
+      <div className="space-y-8 rounded-base border-2 border-border bg-background p-6 sm:p-10">
+        <header className="space-y-3 border-b-2 border-border pb-6">
+          <h1 className="font-heading text-3xl leading-tight">{post.title}</h1>
+          <div className="flex flex-wrap items-center gap-3 font-mono text-sm text-foreground/60">
+            <time dateTime={post.date}>{formatPostDate(post.date)}</time>
+            <span aria-hidden>·</span>
+            <span>{format(blog.readingTime, { minutes: post.readingMinutes })}</span>
           </div>
-        )}
-      </header>
+          {post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-1">
+              {post.tags.map((tag) => (
+                <Badge key={tag} variant="neutral">
+                  {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </header>
 
-      <div className="prose">
-        <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
-          {post.body}
-        </Markdown>
+        <div className="prose">
+          <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+            {post.body}
+          </Markdown>
+        </div>
       </div>
     </article>
   );
