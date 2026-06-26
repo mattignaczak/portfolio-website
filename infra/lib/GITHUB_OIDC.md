@@ -29,19 +29,18 @@ exactly "whatever CDK is allowed to do" — managed once, in the bootstrap.
 | ------------------ | ------------ | -------------------------- | ----------- |
 | `sandbox`          | `sandbox`    | `sandbox.mattignaczak.xyz` | sandbox     |
 | `staging`          | `staging`    | `staging.mattignaczak.xyz` | staging     |
-| `production`       | `prod`       | `mattignaczak.xyz`         | prod        |
+| `prod`       | `prod`       | `mattignaczak.xyz`         | prod        |
 
 > `GITHUB_ENVIRONMENT` below is the **GitHub Environment name** (left column), not
-> `DEPLOY_ENV`. They match for `sandbox`/`staging` but **differ for production**
-> (`production` ≠ `prod`), so don't assume they're interchangeable.
+> `DEPLOY_ENV`.
 
 ## Prerequisites (per account)
 
 1. The account is `cdk bootstrap`-ed (default qualifier `hnb659fds`). If you used a
    custom qualifier, pass it via the `cdkQualifier` prop.
 2. You hold admin credentials for that account (this provisions IAM).
-3. The matching GitHub Environment (`sandbox` / `staging` / `production`) exists in
-   repo **Settings → Environments**. Add a **required reviewer** to `production` —
+3. The matching GitHub Environment (`sandbox` / `staging` / `prod`) exists in
+   repo **Settings → Environments**. Add a **required reviewer** to `prod` —
    that is the manual promotion gate.
 
 ## Deploy
@@ -58,7 +57,7 @@ GITHUB_REPOSITORY=<owner>/portfolio-website GITHUB_ENVIRONMENT=staging \
   CDK_DEFAULT_REGION=us-east-1 npm run oidc:deploy
 
 # Prod account (switch credentials first)
-GITHUB_REPOSITORY=<owner>/portfolio-website GITHUB_ENVIRONMENT=production \
+GITHUB_REPOSITORY=<owner>/portfolio-website GITHUB_ENVIRONMENT=prod \
   CDK_DEFAULT_REGION=us-east-1 npm run oidc:deploy
 ```
 

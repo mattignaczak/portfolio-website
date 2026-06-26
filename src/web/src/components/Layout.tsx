@@ -16,7 +16,7 @@ export function Layout() {
   return (
     <div className="relative min-h-screen text-foreground">
       <AnimatedBackground />
-      <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-6 lg:flex-row lg:gap-10 lg:py-12">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-6 lg:flex-row lg:gap-10 lg:py-12">
         {/* Sidebar — its own panel so text stays legible over the animated bg. */}
         <aside className="space-y-5 rounded-base border-2 border-border bg-secondary-background p-5 shadow-shadow lg:sticky lg:top-12 lg:h-fit lg:w-56 lg:shrink-0">
           <div className="flex items-center gap-3">

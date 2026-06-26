@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import '@fontsource-variable/jetbrains-mono';
+@import '@fontsource-variable/hanken-grotesk';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -18,20 +19,31 @@
   --heading-font-weight: 700;
   --base-font-weight: 500;
 
-  --background: oklch(93.46% 0.0304 254.32);
-  --secondary-background: oklch(100% 0 0);
+  /* Warm ivory "paper" — hue pulled toward yellow and lightness eased down
+     (cards no longer near-pure-white) so it reads calm instead of glaring.
+     Pairs classically with the racing-green accent. */
+  --background: oklch(94.5% 0.018 95);
+  --secondary-background: oklch(97.5% 0.012 95);
   --foreground: oklch(0% 0 0);
-  /* On a near-white page a violet can't be both a black-text button AND a
-     readable link, so light-mode buttons use white text on a deep violet
-     (white-on-main 8.45:1, link-on-bg 6.99:1). Dark mode keeps black text. */
+  /* On a near-white page a deep green can't be both a black-text button AND a
+     readable link, so light-mode buttons use white text on racing green
+     (white-on-main ~7:1, link-on-bg ~5.5:1). Dark mode keeps black text. */
   --main-foreground: oklch(100% 0 0);
 
-  --main: oklch(45.5% 0.26 288);
+  /* Deep British racing green — dark and low-chroma, so it feels expensive on
+     light where the old high-chroma violet felt cheap. Electric violet stays
+     the night accent (see .dark). */
+  --main: oklch(38% 0.09 160);
   --border: oklch(0% 0 0);
   --ring: oklch(0% 0 0);
   --overlay: oklch(0% 0 0 / 0.8);
 
   --shadow: var(--box-shadow-x) var(--box-shadow-y) 0px 0px var(--border);
+
+  /* Phosphor-green CRT for the animated ASCII name — fixed across themes so it
+     always reads like a terminal screen embedded in the page. */
+  --phosphor: oklch(84% 0.2 152);
+  --phosphor-screen: oklch(17% 0.02 160);
 
   --chart-1: oklch(67.47% 0.1726 259.49);
   --chart-2: oklch(67.28% 0.2147 24.22);
@@ -41,19 +53,22 @@
 }
 
 .dark {
-  /* Retro synthwave: a deep blue-purple table, faintly violet panels, an
-     electric-violet accent, and a blue focus glow. Contrast verified WCAG AA:
-     fg/bg 13.5:1, black-on-main 5.8:1, main link-on-bg 4.6:1, ring-on-bg 9:1. */
-  --background: oklch(24% 0.062 280);
-  --secondary-background: oklch(22% 0.03 288);
-  --foreground: oklch(93% 0.006 286);
-  /* Brighter than the light-mode violet so black button text clears AA on the
-     dark page while the accent still pops as a link. */
-  --main: oklch(64% 0.205 288);
+  /* True neutral charcoal ground (zero hue) so the electric-violet accent is
+     the ONLY saturated thing and pops hardest — most "terminal" feel, no
+     all-purple wash. Contrast verified WCAG AA: fg/bg 13.5:1, black-on-main
+     5.8:1, main link-on-bg 4.6:1, ring-on-bg 9:1. */
+  --background: oklch(23% 0 0);
+  --secondary-background: oklch(20% 0 0);
+  --foreground: oklch(93% 0 0);
+  /* Same green hue as light mode (160), but brightened to a vivid emerald so
+     it pops on charcoal and black button text clears AA. One brand hue across
+     both themes — the ground changes, the color doesn't. */
+  --main: oklch(72% 0.18 160);
   --main-foreground: oklch(0% 0 0);
 
   --border: oklch(0% 0 0);
-  --ring: oklch(80% 0.11 242);
+  /* Green focus glow so everything stays in the green family. */
+  --ring: oklch(80% 0.15 160);
 
   --shadow: var(--box-shadow-x) var(--box-shadow-y) 0px 0px var(--border);
 }
@@ -127,6 +142,30 @@ body::-webkit-scrollbar-thumb {
   border-left: 3px solid var(--border);
 }
 
+/* Fixed dark "CRT screen" so the phosphor-green ASCII name pops in both
+   themes — a little terminal embedded on the About page. */
+.crt-screen {
+  position: relative;
+  background: var(--phosphor-screen);
+  color: var(--phosphor);
+  text-shadow: 0 0 6px color-mix(in oklab, var(--phosphor) 65%, transparent);
+}
+
+/* Faint scanlines for CRT authenticity (purely decorative, never blocks input). */
+.crt-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    color-mix(in oklab, black 18%, transparent) 3px
+  );
+}
+
 /* Faint grid texture for the "page on a table" content panel. */
 .grid-bg {
   background-image:
@@ -145,13 +184,34 @@ body::-webkit-scrollbar-thumb {
 
 /* ---- Markdown prose (blog posts) ---------------------------------------- */
 .prose {
-  font-size: 1rem;
-  line-height: 1.75;
+  /* Humanist sans for long-form reading — the "writing is human" half of the
+     type system; JetBrains Mono stays the system voice (headers/code below). */
+  font-family: 'Hanken Grotesk Variable', sans-serif;
+  font-size: 1.0625rem;
+  line-height: 1.7;
   color: color-mix(in oklab, var(--foreground) 88%, transparent);
+  /* Cap the reading measure (~70 chars) so blog lines stay legible now
+     that the page shell is wider. Header sits outside .prose, so only
+     body copy narrows. */
+  max-width: 70ch;
 }
 
 .prose > :first-child {
   margin-top: 0;
+}
+
+/* Mono stays the "system" voice inside prose: section headers read like
+   structural labels, and all code keeps its monospace alignment. */
+.prose h2,
+.prose h3,
+.prose h4 {
+  font-family: 'JetBrains Mono Variable', monospace;
+}
+
+.prose code,
+.prose pre,
+.prose pre code {
+  font-family: 'JetBrains Mono Variable', monospace;
 }
 
 .prose p,
