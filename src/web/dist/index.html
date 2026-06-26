@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Matt Ignaczak</title>
+    <script>
+      // Set theme before paint to avoid a flash of the wrong mode.
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme');
+          var dark = stored
+            ? stored === 'dark'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (dark) document.documentElement.classList.add('dark');
+        } catch (e) {}
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-CAt0Cx-2.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-C8a3hl6d.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

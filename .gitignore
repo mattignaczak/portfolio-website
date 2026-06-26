@@ -1,6 +1,7 @@
 *.js
 !jest.config.js
 *.d.ts
+!src/web/src/vite-env.d.ts
 node_modules
 .pnpm-store
 .claude
@@ -9,7 +10,10 @@ node_modules
 .cdk.staging
 cdk.out
 
-# dotenv — commit .env.vault and .env.project, never the rest
-.env*
-!.env.project
-!.env.vault
+# --- env ---
+# Real env files are LOCAL ONLY and must never be committed.
+# Only .env.example (the committed template) is allowed through.
+.env
+.env.*
+!.env.example
+.gstack/

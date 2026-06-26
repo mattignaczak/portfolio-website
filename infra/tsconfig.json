@@ -4,9 +4,12 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "lib": [
-      "es2022"
+      "es2022",
+      "dom"
     ],
     "declaration": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -22,7 +25,21 @@
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
     "typeRoots": [
-      "./node_modules/@types"
+      "./node_modules/@types",
+      "../node_modules/@types"
+    ],
+    "types": ["node", "jest"],
+    "paths": {
+      "@utils":[
+        "./src/utils/*"
+      ]
+    }
+  },
+  "ts-node":{
+    "files": true, 
+  // required for tsconfig-paths to work
+    "require": [
+      "tsconfig-paths/register"
     ]
   },
   "exclude": [
