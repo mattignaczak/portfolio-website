@@ -24,7 +24,9 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: npm ci
+      # min-release-age cooldown is for `npm install`/`update`; npm 11 also applies it
+      # to `npm ci`, which must install the vetted lockfile verbatim — so override it off.
+      run: npm_config_min_release_age=0 npm ci
 
     - name: Configure AWS credentials (OIDC)
       uses: aws-actions/configure-aws-credentials@v4

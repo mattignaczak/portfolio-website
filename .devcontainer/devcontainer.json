@@ -12,7 +12,7 @@
 	"mounts": [
 		"source=${localEnv:HOME}/.aws,target=/home/node/.aws,type=bind,consistency=cached"
 	],
-	"postCreateCommand": "npm ci",
+	"postCreateCommand": "npm_config_min_release_age=0 npm ci",
 	"customizations": {
 		"vscode": {
 			"extensions": [
