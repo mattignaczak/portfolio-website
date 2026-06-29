@@ -10,3 +10,7 @@ updates:
    directory: "/"
    schedule:
      interval: weekly
+   # Mirror the .npmrc supply-chain cooldown: never open a PR for a version
+   # published less than 7 days ago.
+   cooldown:
+     default-days: 7

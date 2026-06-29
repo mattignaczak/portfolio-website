@@ -208,5 +208,11 @@ npx cdk bootstrap             # one-time account bootstrap (first deploy only)
   suppression) — don't loosen the rules to make a deploy go green.
 - **Supply-chain cooldown:** `.npmrc` sets `min-release-age=7` (needs npm ≥ 11), so
   `npm install <pkg>`/`npm update` won't resolve a version published < 7 days ago.
-  `npm ci` installs the lockfile verbatim and is unaffected. If a brand-new release
-  won't resolve, that's the cooldown, not a broken dep.
+  On npm 11 the cooldown **also** filters `npm ci` — a lockfile pinning a younger
+  version fails with `ETARGET` — so every `npm ci` call site (`.devcontainer/
+  devcontainer.json`, `.github/workflows/ci-cd.yml`, `.github/actions/deploy-cdk/
+  action.yml`) overrides it with `npm_config_min_release_age=0` to install the vetted
+  lockfile verbatim. If a brand-new release won't resolve on an `install`/`update`,
+  that's the cooldown, not a broken dep. Dependabot has its own 7-day cooldown
+  (`cooldown:` in `.github/dependabot.yml`) so it never opens a PR for a <7-day-old
+  version in the first place.

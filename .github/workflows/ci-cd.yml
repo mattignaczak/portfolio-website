@@ -29,7 +29,9 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      # min-release-age cooldown is for `npm install`/`update`; npm 11 also applies it
+      # to `npm ci`, which must install the vetted lockfile verbatim — so override it off.
+      - run: npm_config_min_release_age=0 npm ci
       # Required before the infra tests: the BucketDeployment asset reads src/web/dist.
       # build:web also runs `tsc --noEmit`, so it type-checks the frontend.
       - run: npm run build:web
