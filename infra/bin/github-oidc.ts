@@ -21,7 +21,7 @@ if (!repo) {
 const allowedEnvironments: GithubOidcStackProps['githubEnvironment'][] = [
   'sandbox',
   'staging',
-  'production',
+  'prod',
 ];
 if (!allowedEnvironments.includes(githubEnvironment as never)) {
   throw new Error(
