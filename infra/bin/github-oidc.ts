@@ -20,6 +20,7 @@ if (!repo) {
 
 const allowedEnvironments: GithubOidcStackProps['githubEnvironment'][] = [
   'sandbox',
+  'dev',
   'staging',
   'prod',
 ];

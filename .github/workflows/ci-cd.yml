@@ -1,9 +1,11 @@
 name: CI/CD
 
-# Tests run on every push and PR. Deploys are stage-gated:
-#   push            -> sandbox  (DEPLOY_ENV=sandbox)
-#   pull_request    -> staging  (DEPLOY_ENV=staging)
-#   push to main    -> prod, behind a manual approval gate (DEPLOY_ENV=prod)
+# Tests run on every push and PR. The web bundle is built ONCE in `test` and the
+# same artifact is promoted to each environment (build once, deploy many):
+#   pull_request    -> dev      (DEPLOY_ENV=dev, shared PR integration env)
+#   push to main    -> staging  (DEPLOY_ENV=staging, automatic)
+#                      then prod (DEPLOY_ENV=prod), behind a manual approval gate
+#   any other push  -> test only, no deploy
 on:
   push:
   pull_request:
@@ -44,18 +46,30 @@ jobs:
       # Synth-only assertions + cdk-nag gate — no AWS calls. test/setup.ts injects
       # DEPLOY_ENV=test and test-only domain/cert values, so no secrets are needed.
       - run: npm test -w infra
+      # Publish the bundle built above so every deploy job promotes these exact
+      # bytes instead of recompiling — the build the gate approves is the build
+      # that ships. The web build is env-agnostic, so one artifact serves all envs.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: src/web/dist
+          retention-days: 7
+          if-no-files-found: error
 
-  deploy-sandbox:
+  # Every PR deploys the built artifact to the shared `dev` environment so the
+  # change can be viewed live before merge. Multiple open PRs share one stack and
+  # are serialized below (last deploy wins) — see the deploy-dev concurrency group.
+  deploy-dev:
     needs: test
-    if: github.event_name == 'push'
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    environment: sandbox
-    # Serialize all sandbox deploys (across branches) onto one CloudFormation op.
+    environment: dev
+    # Serialize all dev deploys (across PRs) onto one CloudFormation op.
     concurrency:
-      group: deploy-sandbox
+      group: deploy-dev
       cancel-in-progress: false
     env:
-      DEPLOY_ENV: sandbox
+      DEPLOY_ENV: dev
       SITE_DOMAIN_NAME: ${{ vars.SITE_DOMAIN_NAME }}
       ACM_CERT_ARN: ${{ vars.ACM_CERT_ARN }}
     steps:
@@ -64,12 +78,13 @@ jobs:
         with:
           aws-role-arn: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
 
+  # Auto-deploys on every push to main: staging is the pre-prod dress rehearsal
+  # that always reflects "what's about to ship". No gate here — the gate is on prod.
   deploy-staging:
     needs: test
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: staging
-    # Shared staging stack: serialize concurrent PR deploys so they don't collide.
     concurrency:
       group: deploy-staging
       cancel-in-progress: false
@@ -83,12 +98,15 @@ jobs:
         with:
           aws-role-arn: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
 
-  # Runs only after sandbox succeeds on main. The `production` environment's
-  # required-reviewer rule (configured in repo Settings) makes this job pause
-  # as "Waiting" until you approve it — that's the manual promotion gate.
+  # Promotes the same artifact to prod after staging. The `prod` environment's
+  # required-reviewer rule (configured in repo Settings) makes this job pause as
+  # "Waiting" until you approve it — that's the manual promotion gate (the button).
   deploy-prod:
-    needs: deploy-sandbox
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # TODO(human): wire the prod gate. Replace the inert `if: false` and add a
+    # `needs:` line so this job (a) runs ONLY after staging succeeds and (b) ONLY
+    # on a push to main — preserving the one-way flow toward prod. `if: false`
+    # keeps prod from ever deploying until you complete this.
+    if: false
     runs-on: ubuntu-latest
     environment: prod
     # Never run two production deploys at once.

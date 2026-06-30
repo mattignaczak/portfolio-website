@@ -14,7 +14,7 @@ if (process.env.DEPLOY_ENV) {
   dotenv.config({ path: path.resolve(__dirname, `../.env.${process.env.DEPLOY_ENV}`) });
 }
 
-const availableEnvironments = ['prod', 'staging', 'sandbox', 'test'];
+const availableEnvironments = ['prod', 'staging', 'sandbox', 'test', 'dev'];
 const currentEnvironment: string = (process.env.DEPLOY_ENV ?? '').toLowerCase();
 if (!availableEnvironments.includes(currentEnvironment)) {
   throw new Error(
