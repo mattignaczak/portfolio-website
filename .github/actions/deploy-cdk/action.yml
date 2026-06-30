@@ -1,9 +1,11 @@
 name: Deploy CDK stack
 description: >-
-  Build the web bundle and deploy the PortfolioWebsiteStack to AWS, assuming an
-  IAM role via GitHub OIDC (no long-lived access keys). Stage-specific config
-  (DEPLOY_ENV / SITE_DOMAIN_NAME / ACM_CERT_ARN) is read from the calling job's
-  env, so this action stays identical across sandbox / staging / prod.
+  Deploy the PortfolioWebsiteStack to AWS, assuming an IAM role via GitHub OIDC
+  (no long-lived access keys). The web bundle is NOT rebuilt here — it is the
+  artifact the `test` job built once and the same bytes are promoted to every
+  environment. Stage-specific config (DEPLOY_ENV / SITE_DOMAIN_NAME /
+  ACM_CERT_ARN) is read from the calling job's env, so this action stays
+  identical across dev / staging / prod.
 
 inputs:
   aws-role-arn:
@@ -13,6 +15,10 @@ inputs:
     description: Region to deploy into. Must be us-east-1 for the ACM cert.
     required: false
     default: us-east-1
+  web-artifact:
+    description: Name of the prebuilt web bundle artifact to deploy (from the test job).
+    required: false
+    default: web-dist
 
 runs:
   using: composite
@@ -34,10 +40,15 @@ runs:
         role-to-assume: ${{ inputs.aws-role-arn }}
         aws-region: ${{ inputs.aws-region }}
 
-    # Stages src/web/dist, which the BucketDeployment construct uploads as an asset.
-    - name: Build web bundle
-      shell: bash
-      run: npm run build:web
+    # Restore the exact bundle the test job built — same bytes promoted to every
+    # environment (build once, deploy many). Lands in src/web/dist, which the
+    # BucketDeployment construct uploads as a synth-time asset, so it MUST run
+    # before the cdk diff/deploy below.
+    - name: Download web bundle
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ inputs.web-artifact }}
+        path: src/web/dist
 
     # Surface what will change before applying. Written to the job summary so a
     # reviewer (esp. on the gated prod job) can see the planned delta. Informational

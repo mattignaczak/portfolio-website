@@ -28,6 +28,7 @@ exactly "whatever CDK is allowed to do" — managed once, in the bootstrap.
 | GitHub Environment | `DEPLOY_ENV` | Domain                     | AWS account |
 | ------------------ | ------------ | -------------------------- | ----------- |
 | `sandbox`          | `sandbox`    | `sandbox.mattignaczak.xyz` | sandbox     |
+| `dev`              | `dev`        | `dev.mattignaczak.xyz`     | development | 
 | `staging`          | `staging`    | `staging.mattignaczak.xyz` | staging     |
 | `prod`       | `prod`       | `mattignaczak.xyz`         | prod        |
 
@@ -50,6 +51,10 @@ Authenticate to the target account, then from `infra/`:
 ```bash
 # Sandbox account
 GITHUB_REPOSITORY=<owner>/portfolio-website GITHUB_ENVIRONMENT=sandbox \
+  CDK_DEFAULT_REGION=us-east-1 npm run oidc:deploy
+
+# Development account 
+GITHUB_REPOSITORY=<owner>/portfolio-website GITHUB_ENVIRONMENT=dev \
   CDK_DEFAULT_REGION=us-east-1 npm run oidc:deploy
 
 # Staging account (switch credentials first)

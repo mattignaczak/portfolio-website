@@ -57,10 +57,18 @@ via the `.github/actions/deploy-cdk` composite action:
 - `test` → `npm ci`, `build:web` (also type-checks the frontend), `format:check`,
   `lint`, `tsc --noEmit` in `infra`, then `npm test -w infra` (synth-only
   assertions + the **cdk-nag** security gate; `test/setup.ts` injects test-only
-  `DEPLOY_ENV`/domain/cert values, so no secrets are needed).
-- **push** → deploy **sandbox**; **pull_request** → deploy **staging**;
-  **push to `main`** → deploy **prod**, gated behind the `production` GitHub
-  Environment's required-reviewer rule (the manual promotion gate).
+  `DEPLOY_ENV`/domain/cert values, so no secrets are needed). It then uploads the
+  built `src/web/dist` as the **`web-dist` artifact**.
+- **Build once, deploy many:** the web bundle is built a single time in `test`;
+  every deploy job downloads that same `web-dist` artifact instead of recompiling
+  (`deploy-cdk` no longer runs `build:web`), so the build the gate approves is the
+  build that ships. This holds only because the bundle is env-agnostic — if you
+  ever bake per-env values into the Vite build, switch to runtime config instead.
+- **pull_request** → deploy **dev** (the shared PR integration env);
+  **push to `main`** → deploy **staging** automatically, then **prod** gated behind
+  the `prod` GitHub Environment's required-reviewer rule (the manual promotion
+  gate / "button"). Any other push runs `test` only. `sandbox` is no longer in CI —
+  it's a local-only playground (`npm run deploy:sandbox`).
 - Deploys never auto-cancel (`cancel-in-progress: false`) and are serialized
   per-environment — cancelling mid-deploy can strand CloudFormation in
   `UPDATE_IN_PROGRESS`. Stage config (`SITE_DOMAIN_NAME`, `ACM_CERT_ARN`,

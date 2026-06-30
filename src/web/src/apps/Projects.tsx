@@ -91,7 +91,7 @@ export function Projects() {
 
   // Keyboard parity for the clickable cards (mouse onClick already opens the modal).
   function handleCardKey(event: KeyboardEvent<HTMLDivElement>, index: number) {
-    // TODO(human): when event.key is 'Enter' or ' ' (Space), call setActiveIdx(index)
+    // TODO: when event.key is 'Enter' or ' ' (Space), call setActiveIdx(index)
     // to open the modal, and event.preventDefault() so Space doesn't scroll the page.
     void event;
     void index;

@@ -14,13 +14,15 @@
     "prepare": "husky",
     "build:web": "npm run build -w web",
     "deploy": "npm run build:web && cd infra && npx cdk deploy",
+    "deploy:dev": "set -a; . ./.env.dev; set +a; npm run deploy -- --profile dev",
     "deploy:sandbox": "set -a; . ./.env.sandbox; set +a; npm run deploy -- --profile sandbox",
     "deploy:staging": "set -a; . ./.env.staging; set +a; npm run deploy -- --profile staging",
     "deploy:prod": "set -a; . ./.env.prod; set +a; npm run deploy -- --profile prod",
     "cdk:synth": "cd infra && npx cdk synth",
     "cdk:diff": "cd infra && npx cdk diff",
     "synth": "set -a; . ./.env.sandbox; set +a; npm run cdk:synth -- --profile sandbox",
-    "diff:prod": "set -a; . ./.env.prod; set +a; npm run cdk:diff -- --profile prod", 
+    "diff:dev": "set -a; . ./.env.dev; set +a; npm run cdk:diff -- --profile dev",
+    "diff:prod": "set -a; . ./.env.prod; set +a; npm run cdk:diff -- --profile prod",
     "cdk:bootstrap": "set -a; . ./.env.${ENV:-sandbox}; set +a; cd infra && npx cdk bootstrap --profile ${ENV:-sandbox}"
   },
   "devDependencies": {
