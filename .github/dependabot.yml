@@ -14,3 +14,21 @@ updates:
    # published less than 7 days ago.
    cooldown:
      default-days: 7
+
+ - package-ecosystem: "npm"
+   # Root manifest — Dependabot follows the npm-workspaces globs (infra, src/*).
+   directory: "/"
+   schedule:
+     interval: weekly
+   # Same supply-chain cooldown as .npmrc's min-release-age=7, so Dependabot
+   # never proposes a version our own install would refuse to resolve.
+   cooldown:
+     default-days: 7
+   # Cap concurrent PRs and bundle non-major bumps into a single PR each to keep
+   # the queue (and CI runs) manageable; majors still come through individually.
+   open-pull-requests-limit: 10
+   groups:
+     minor-and-patch:
+       update-types:
+         - "minor"
+         - "patch"
