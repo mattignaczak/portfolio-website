@@ -90,7 +90,7 @@ jobs:
     needs: deploy-sandbox
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: production
+    environment: prod
     # Never run two production deploys at once.
     concurrency:
       group: deploy-production
