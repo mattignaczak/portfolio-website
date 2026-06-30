@@ -21,7 +21,6 @@ export class PortfolioWebsiteStack extends cdk.Stack {
     tags.add('Project', 'portfolio-website');
     tags.add('Environment', cdkConfig.environment);
     tags.add('ManagedBy', 'cdk');
-    // TODO(human): add any further org-convention tags (e.g. Owner, CostCenter)
 
     const siteBucket = new s3.Bucket(this, 'mattignaczakXyzSiteBucket', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,

@@ -102,11 +102,9 @@ jobs:
   # required-reviewer rule (configured in repo Settings) makes this job pause as
   # "Waiting" until you approve it — that's the manual promotion gate (the button).
   deploy-prod:
-    # TODO(human): wire the prod gate. Replace the inert `if: false` and add a
-    # `needs:` line so this job (a) runs ONLY after staging succeeds and (b) ONLY
-    # on a push to main — preserving the one-way flow toward prod. `if: false`
-    # keeps prod from ever deploying until you complete this.
-    if: false
+    # Gate: only after staging succeeds (needs) and only on a push to main (if).
+    needs: [test, deploy-staging]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: prod
     # Never run two production deploys at once.
