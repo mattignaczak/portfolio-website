@@ -20,20 +20,20 @@
     "@eslint/js": "^9.39.4",
     "@types/jest": "^30",
     "@types/node": "^24.10.1",
-    "aws-cdk": "2.1128.1",
+    "aws-cdk": "2.1134.0",
     "cdk-nag": "^2.38.2",
-    "eslint": "^10.2.1",
+    "eslint": "^10.8.0",
     "eslint-config-prettier": "^10.1.8",
     "jest": "^30",
-    "prettier": "^3.8.3",
-    "ts-jest": "^29",
+    "prettier": "^3.9.6",
+    "ts-jest": "^29.4.12",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.58.2"
+    "typescript-eslint": "^8.65.0"
   },
   "dependencies": {
-    "aws-cdk-lib": "^2.248.0",
-    "constructs": "^10.5.0",
+    "aws-cdk-lib": "^2.263.0",
+    "constructs": "^10.7.2",
     "dotenv": "^17.4.2"
   }
 }
