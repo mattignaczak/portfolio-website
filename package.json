@@ -37,9 +37,9 @@
     ]
   },
   "dependencies": {
-    "@tailwindcss/vite": "^4.3.1",
-    "headroom-ai": "^0.22.4",
-    "shadcn": "^4.11.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "headroom-ai": "^0.36.5",
+    "shadcn": "^4.19.0",
     "tailwindcss": "^4.3.1"
   }
 }
