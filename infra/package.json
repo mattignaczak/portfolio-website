@@ -17,7 +17,7 @@
     "format:check": "prettier --check \"**/*.ts\""
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.4",
+    "@eslint/js": "^10.0.1",
     "@types/jest": "^30",
     "@types/node": "^24.10.1",
     "aws-cdk": "2.1128.1",
