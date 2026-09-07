@@ -94,21 +94,37 @@ describe('spa-routing rewrite logic', () => {
   });
 });
 
-describe('spa-routing published bundle', () => {
-  // Built once: esbuild.buildSync is the slowest thing in this suite.
+describe('spa-routing published code', () => {
   const code = buildSpaRoutingCode();
 
-  it('targets the ECMAScript version cloudfront-js-2.0 implements', () => {
-    // Drifting this upward deploys cleanly and then throws on every viewer
-    // request — a full outage with no synth-time signal.
-    expect(CLOUDFRONT_JS_TARGET).toBe('es2020');
+  it('targets a version the cloudfront-js-2.0 runtime accepts', () => {
+    // Raising this deploys cleanly and then fails to compile on the runtime,
+    // which answers every request with 503. There is no synth-time signal.
+    expect(CLOUDFRONT_JS_TARGET).toBe('es2015');
   });
 
   it('declares a bare top-level `handler`, as the runtime requires', () => {
-    // CloudFront Functions have no module system; it calls a global `handler`.
-    // esbuild's IIFE wrapper hides the export, so the bundler appends a
-    // delegate. If that footer wiring breaks, this is the only thing that says so.
+    // CloudFront Functions have no module system; the runtime calls a global
+    // `handler`. The build strips the `export` keywords to leave this behind.
     expect(code).toMatch(/^function handler\(event\)/m);
+    expect(code).not.toMatch(/\bexport\b/);
+  });
+
+  it('emits no bundler wrapper', () => {
+    // Regression gate for a real 503. `bundle: true` wrapped this module in
+    // esbuild's CommonJS interop helpers because it has exports. One of them
+    // uses `for...of`, which cloudfront-js-2.0 rejects with
+    // `SyntaxError: Token "of" not supported in this version`, so the function
+    // failed to compile and every viewer request returned 503.
+    expect(code).not.toMatch(/for\s*\([^)]*\bof\b/);
+    expect(code).not.toMatch(/Object\.defineProperty|__toCommonJS|__copyProps/);
+    expect(code).not.toMatch(/\(\(\)\s*=>/);
+  });
+
+  it('stays small enough to read in the CloudFront console', () => {
+    // Transpiled output should be roughly the size of the source. A jump here
+    // means a wrapper crept back in.
+    expect(Buffer.byteLength(code, 'utf8')).toBeLessThan(1024);
   });
 
   it('references no Node or browser globals the runtime lacks', () => {

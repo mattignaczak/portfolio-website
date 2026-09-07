@@ -1,55 +1,59 @@
 import * as esbuild from 'esbuild';
+import * as fs from 'fs';
 import * as path from 'path';
 
 /**
- * Bundles `spa-routing.ts` into the plain JavaScript that CloudFront publishes.
+ * Compiles `spa-routing.ts` into the JavaScript that CloudFront publishes.
  *
- * CloudFront Functions have no module system: the uploaded source must declare
- * a bare top-level `function handler(event)`. esbuild can't emit that from an
- * ES module directly, so we bundle to an IIFE assigned to a private global and
- * append a thin top-level delegate:
- *
- *   var __spaRouting = (() => { ...bundled module...; return exports; })();
- *   function handler(event) { return __spaRouting.handler(event); }
- *
- * That keeps the source a normal, strictly-typechecked TS module (importable by
- * the tests) while still shipping something the runtime accepts.
+ * This *transpiles*; it does not bundle. `spa-routing.ts` imports nothing, so
+ * there is no dependency graph to resolve — and `bundle: true` was actively
+ * harmful here. For a module with exports it wraps the output in esbuild's
+ * CommonJS interop helpers, one of which uses `for...of`. The runtime rejects
+ * that token, the function fails to compile, and CloudFront answers every
+ * request with 503. Transpiling emits the declarations as written instead.
  */
 
-/** cloudfront-js-2.0 is ECMAScript 2020. Emitting anything newer — optional
- *  chaining assignment, `??=`, class fields — is accepted at deploy time and
- *  then fails on every viewer request, so this must not drift upward. */
-export const CLOUDFRONT_JS_TARGET = 'es2020';
+/**
+ * The `cloudfront-js-2.0` runtime is **not** ES2020, despite the name. It is
+ * ECMAScript 5.1 plus a limited set of later features. `for...of` is ES2015 and
+ * the runtime still rejects it, so this target is a floor, not a guarantee:
+ * it stops esbuild emitting anything newer, but it cannot describe the runtime
+ * exactly. Keep `spa-routing.ts` conservative as well.
+ *
+ * es5 is not an option — esbuild cannot downlevel `const` without the scope
+ * analysis that only bundling provides, and bundling is what broke this.
+ *
+ * A local test cannot prove this value is safe. Verify against the real runtime:
+ *   aws cloudfront test-function --name <fn> --if-match <etag> --stage LIVE \
+ *     --region us-east-1 --event-object fileb://event.json
+ */
+export const CLOUDFRONT_JS_TARGET = 'es2015';
 
-const GLOBAL_NAME = '__spaRouting';
 const ENTRY_POINT = path.join(__dirname, 'spa-routing.ts');
 
 /**
- * Synchronous on purpose: CDK's construct tree is built synchronously, so the
- * code string has to exist by the time `new cloudfront.Function()` is called.
+ * `spa-routing.ts` exports its declarations so the tests can import them, but
+ * CloudFront Functions have no module system and reject an `export` keyword.
+ * Removing the prefix leaves plain top-level declarations — including the bare
+ * `function handler` that the runtime calls.
+ */
+const EXPORT_KEYWORD = /^export /gm;
+
+/**
+ * Synchronous on purpose: CDK builds its construct tree synchronously, so the
+ * code string must exist by the time `new cloudfront.Function()` is called.
  */
 export function buildSpaRoutingCode(): string {
-  const result = esbuild.buildSync({
-    entryPoints: [ENTRY_POINT],
-    bundle: true,
-    write: false,
-    format: 'iife',
-    globalName: GLOBAL_NAME,
+  const source = fs.readFileSync(ENTRY_POINT, 'utf8');
+
+  const result = esbuild.transformSync(source.replace(EXPORT_KEYWORD, ''), {
+    loader: 'ts',
     target: CLOUDFRONT_JS_TARGET,
-    platform: 'neutral',
-    // Readability over bytes: the published source is what you read in the
-    // CloudFront console when debugging, and we are far under the 10 KB cap.
+    // Readability over bytes: this is what you read in the CloudFront console
+    // when debugging, and the file is far under the 10 KB limit.
     minify: false,
     legalComments: 'none',
-    footer: {
-      js: `function handler(event) { return ${GLOBAL_NAME}.handler(event); }`,
-    },
   });
 
-  const output = result.outputFiles[0];
-  if (!output) {
-    throw new Error(`esbuild produced no output for ${ENTRY_POINT}`);
-  }
-
-  return output.text;
+  return result.code;
 }
