@@ -60,9 +60,25 @@ npm run deploy:prod
 
 ## Adding a variable
 
-1. Add it to `.env.example` (with an empty/example value) so it's documented.
-2. Add the real value to each `.env.<environment>` that needs it.
-3. Use it in code via `process.env.MY_VAR`.
+1. Add it to `.env.example` (with an empty value) so it's documented. Put the
+   explanation in a `#` comment directly above it — that comment travels with the key.
+2. Run `npm run env:sync`. It appends the new key, and its comment, to every
+   `.env.<environment>` file that is missing it. Then fill in the values.
+3. Use it in code via `process.env.MY_VAR` (or `requireEnv` in `infra/cdk-config.ts`).
+
+```bash
+npm run env:check    # report drift against .env.example. Read-only, exit 1 if any
+npm run env:sync     # append the missing keys
+```
+
+`env-sync` prints **key names only, never values** — the output is safe to paste. It
+appends and never edits, so an existing value is never overwritten, and unexpected keys
+are reported rather than deleted.
+
+> `test` is a valid `DEPLOY_ENV` with **no `.env.test` file**. `infra/test/setup.ts`
+> injects the values the suite needs before any module loads, and `dotenv` never
+> overrides an already-set variable. CI proves it: `.env.*` is gitignored, so the file
+> is absent on a fresh checkout and `npm test -w infra` passes. `env-sync` skips it.
 
 **Secrets do not belong in these files for anything you'd deploy from CI.** They're
 fine locally, but the moment a secret needs to exist in CI or production, use one of:
