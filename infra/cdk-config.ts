@@ -46,10 +46,22 @@ export default {
   environment: currentEnvironment,
   observability: {},
   api: {},
-  website: {
-    domainName,
-    // Both the apex and its www. subdomain are served by one distribution.
-    domainNames: [`www.${domainName}`, domainName],
-    acmCertArn: requireEnv('ACM_CERT_ARN'),
+  get website() {
+    return {
+      domainName,
+      // Both the apex and its www. subdomain are served by one distribution.
+      domainNames: [`www.${domainName}`, domainName],
+      acmCertArn: requireEnv('ACM_CERT_ARN'),
+    };
+  },
+  get audiobookshelf() {
+    return {
+      domainName: requireEnv('ABS_DOMAIN_NAME'),
+      acmeEmail: requireEnv('ABS_ACME_EMAIL'),
+      imageDigest: requireEnv('ABS_IMAGE_DIGEST'),
+      dataVolumeId: requireEnv('ABS_DATA_VOLUME_ID'),
+      availabilityZone: requireEnv('ABS_AZ'),
+      instanceType: process.env.ABS_INSTANCE_TYPE ?? 't4g.small',
+    };
   },
 };
