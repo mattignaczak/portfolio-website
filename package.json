@@ -12,6 +12,8 @@
     "format": "npm run format --workspaces --if-present",
     "format:check": "npm run format:check --workspaces --if-present",
     "prepare": "husky",
+    "env:check": "node scripts/env-sync.mjs",
+    "env:sync": "node scripts/env-sync.mjs --write",
     "build:web": "npm run build -w web",
     "deploy": "npm run build:web && cd infra && npx cdk deploy",
     "deploy:dev": "set -a; . ./.env.dev; set +a; npm run deploy -- --profile dev",
