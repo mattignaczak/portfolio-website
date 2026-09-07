@@ -55,9 +55,10 @@ See `ENVIRONMENT.md` for the full DNS/TLS setup and env-var workflow.
 via the `.github/actions/deploy-cdk` composite action:
 
 - `test` → `npm ci`, `build:web` (also type-checks the frontend), `format:check`,
-  `lint`, `tsc --noEmit` in `infra`, then `npm test -w infra` (synth-only
-  assertions + the **cdk-nag** security gate; `test/setup.ts` injects test-only
-  `DEPLOY_ENV`/domain/cert values, so no secrets are needed). It then uploads the
+  `lint`, `npm test -w web` (Vitest), `tsc --noEmit` in `infra`, then
+  `npm test -w infra` (synth-only assertions + the **cdk-nag** security gate;
+  `test/setup.ts` injects test-only `DEPLOY_ENV`/domain/cert values, so no
+  secrets are needed). It then uploads the
   built `src/web/dist` as the **`web-dist` artifact**.
 - **Build once, deploy many:** the web bundle is built a single time in `test`;
   every deploy job downloads that same `web-dist` artifact instead of recompiling

@@ -22,6 +22,7 @@
     "@types/node": "^24.10.1",
     "aws-cdk": "2.1128.1",
     "cdk-nag": "^2.38.2",
+    "esbuild": "^0.28.2",
     "eslint": "^10.2.1",
     "eslint-config-prettier": "^10.1.8",
     "jest": "^30",

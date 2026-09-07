@@ -229,8 +229,9 @@ export const en = {
       items: [
         {
           primary: 'University of Ottawa',
-          secondary: 'Coursework in Computer Science, minor in Entrepreneurship & Management',
-          meta: '',
+          secondary:
+            'Coursework in Computer Science, & declared minor Entrepreneurship & Management',
+          meta: 'Incomplete',
         },
         {
           primary: 'AWS Certified Developer – Associate',
@@ -384,6 +385,12 @@ Separate from the [eSight Go Companion](#) phone app — different platform, dif
     backToList: '← All posts',
     // {minutes} -> read-time estimate
     readingTime: '{minutes} min read',
+  },
+
+  notFound: {
+    heading: '404',
+    intro: 'That page does not exist. It may have moved, or the link may be wrong.',
+    backHome: '← Back home',
   },
 
   contact: {

@@ -57,7 +57,12 @@ function normalizeDate(value: string | Date | undefined): string {
   return value ?? '';
 }
 
-function parsePost(path: string, raw: string): Post {
+/**
+ * Parse one markdown file into a `Post`. Exported for tests: the failure
+ * modes here (missing frontmatter, missing title) throw at *build* time, so
+ * they can only be exercised against fixtures rather than the real corpus.
+ */
+export function parsePost(path: string, raw: string): Post {
   const match = FRONTMATTER_RE.exec(raw);
   if (!match) {
     throw new Error(`Post "${path}" is missing a \`---\` frontmatter block.`);
