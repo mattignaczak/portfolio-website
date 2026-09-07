@@ -111,4 +111,63 @@ describe('CloudFront distribution', () => {
     // bucket stay fully private while CloudFront still reads from it.
     template.resourceCountIs('AWS::CloudFront::OriginAccessControl', 1);
   });
+
+  describe('SPA deep-link routing', () => {
+    // Regression gate. Without a viewer-request rewrite, CloudFront forwards
+    // `/resume` to S3 as an object key that does not exist, and the OAC policy
+    // (GetObject, no ListBucket) makes S3 answer 403 rather than 404. Result:
+    // every route except `/` breaks on a hard load, refresh, or shared link.
+
+    it('publishes the routing function on the JS 2.0 runtime', () => {
+      const template = synthTemplate();
+
+      template.hasResourceProperties('AWS::CloudFront::Function', {
+        FunctionConfig: Match.objectLike({ Runtime: 'cloudfront-js-2.0' }),
+        // Assert the shipped bytes are the file under test, not an empty stub.
+        FunctionCode: Match.stringLikeRegexp('function handler'),
+      });
+    });
+
+    it('associates the function with the default behavior on viewer-request', () => {
+      const template = synthTemplate();
+
+      // viewer-request (not origin-request) so the rewrite happens before the
+      // cache lookup — otherwise every deep link is a separate cache entry.
+      template.hasResourceProperties('AWS::CloudFront::Distribution', {
+        DistributionConfig: Match.objectLike({
+          DefaultCacheBehavior: Match.objectLike({
+            FunctionAssociations: Match.arrayWith([
+              Match.objectLike({ EventType: 'viewer-request' }),
+            ]),
+          }),
+        }),
+      });
+    });
+
+    it('does not fall back to blanket 403/404 error responses', () => {
+      const template = synthTemplate();
+
+      // Mapping 403/404 to `/index.html` with status 200 would also mask a
+      // missing JS/CSS bundle as a blank page that reports success. The rewrite
+      // function is deliberately used instead — keep it that way.
+      // findResources is typed as `any`, so narrow it once up front rather than
+      // reaching through an untyped chain.
+      interface DistributionResource {
+        Properties?: {
+          DistributionConfig?: {
+            CustomErrorResponses?: { ResponseCode?: number }[];
+          };
+        };
+      }
+      const distributions = Object.values(
+        template.findResources('AWS::CloudFront::Distribution'),
+      ) as DistributionResource[];
+      const errorResponses =
+        distributions[0]?.Properties?.DistributionConfig?.CustomErrorResponses ?? [];
+
+      for (const response of errorResponses) {
+        expect(response.ResponseCode).not.toBe(200);
+      }
+    });
+  });
 });

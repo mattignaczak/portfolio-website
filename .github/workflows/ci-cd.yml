@@ -39,6 +39,10 @@ jobs:
       - run: npm run build:web
       - run: npm run format:check
       - run: npm run lint
+      # Frontend tests (Vitest, jsdom). Covers the build-time markdown parser in
+      # lib/posts.ts and deep-link routing through the real route tree — the
+      # client half of the SPA routing that spa-routing.ts handles at the edge.
+      - run: npm test -w web
       # Type-check the infra workspace incl. files no test imports (e.g. the OIDC
       # stack/app), which ts-jest alone wouldn't reach.
       - run: npx tsc --noEmit
