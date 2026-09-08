@@ -14,7 +14,14 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.ts\"",
-    "format:check": "prettier --check \"**/*.ts\""
+    "format:check": "prettier --check \"**/*.ts\"", 
+    "bootstrap:volume:sandbox": "set -a; . ../.env.sandbox; set +a; ./scripts/abs-bootstrap-volume.sh", 
+    "bootstrap:volume:dev": "set -a; . ../.env.dev; set +a; ./scripts/abs-bootstrap-volume.sh", 
+    "bootstrap:volume:staging": "set -a; . ../.env.staging; set +a; ./scripts/abs-bootstrap-volume.sh", 
+    "bootstrap:volume:prod": "set -a; . ../.env.prod; set +a; ./scripts/abs-bootstrap-volume.sh",
+    "bootstrap:volume:all": "npm run bootstrap:volume:sandbox; npm run bootstrap:volume:dev; npm run bootstrap:volume:staging; npm run bootstrap:volume:prod"
+
+
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
